@@ -16,8 +16,8 @@ public:
 	using Id = size_t;
 
 	Id Add(T object) {
-		Id new_id = collection.size();
-		collection.push_back({ move(object) });
+		Id new_id = objects.size();
+		objects.push_back({ move(object) });
 		priorities.insert({ 0, new_id });
 		return new_id;
 	}
@@ -31,15 +31,15 @@ public:
 	}
 
 	bool IsValid(Id id) const {
-		return id >= 0 && id < collection.size();
+		return id >= 0 && id < objects.size() && objects[id].priority != NONE_PRIORITY;
 	}
 
 	const T& Get(Id id) const {
-		return collection.at(id);
+		return objects[id].data;
 	}
 
 	void Promote(Id id) {
-		auto& item = collection[id];
+		auto& item = objects[id];
 		const int old_priority = item.priority;
 		const int new_priority = ++item.priority;
 		priorities.erase({ old_priority, id });
@@ -47,13 +47,13 @@ public:
 	}
 
 	pair<const T&, int> GetMax() const {
-		const auto& item = collection[priorities.rbegin()->second];
+		const auto& item = objects[priorities.rbegin()->second];
 		return { item.data, item.priority };
 	}
 
 	pair<T, int> PopMax() {
 		const auto max_priority_it = prev(priorities.end());
-		auto& item = collection[max_priority_it->second];
+		auto& item = objects[max_priority_it->second];
 		priorities.erase(max_priority_it);
 		const int priority = item.priority;
 		item.priority = NONE_PRIORITY;
@@ -67,14 +67,14 @@ private:
 	};
 	static const int NONE_PRIORITY = -1;
 
-	vector<PriorityObject> collection;
+	vector<PriorityObject> objects;
 	set<pair<int, Id>> priorities;
 };
 
 
 class StringNonCopyable : public string {
 public:
-	using string::string;  // ѕозвол€ет использовать конструкторы строки
+	using string::string;  // Позволяет использовать конструкторы строки
 	StringNonCopyable(const StringNonCopyable&) = delete;
 	StringNonCopyable(StringNonCopyable&&) = default;
 	StringNonCopyable& operator=(const StringNonCopyable&) = delete;
